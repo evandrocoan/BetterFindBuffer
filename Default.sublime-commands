@@ -1,0 +1,40 @@
+[
+    {
+        "caption": "BetterFindBuffer: In Files Open File",
+        "command": "find_in_files_open_file",
+    },
+    {
+        "caption": "BetterFindBuffer: In Files Open File",
+        "command": "find_in_files_open_file",
+    },
+    {
+        "caption": "BetterFindBuffer: In Files Open All Files",
+        "command": "find_in_files_open_all_files",
+    },
+    {
+        "caption": "BetterFindBuffer: In Files Jump File",
+        "command": "find_in_files_jump_file",
+    },
+    {
+        "caption": "BetterFindBuffer: In Files Jump File (Forward)",
+        "command": "find_in_files_jump_file",
+        "args": { "forward": false },
+    },
+    {
+        "caption": "BetterFindBuffer: In Files Jump Match",
+        "command": "find_in_files_jump_match",
+    },
+    {
+        "caption": "BetterFindBuffer: In Files Jump Match (Forward)",
+        "command": "find_in_files_jump_match",
+        "args": { "forward": false },
+    },
+    {
+        "caption": "BetterFindBuffer:Fold And Move To Next File",
+        "command": "bfb_fold_and_move_to_next_file",
+    },
+    {
+        "caption": "BetterFindBuffer:Toggle Popup Help",
+        "command": "bfb_toggle_popup_help",
+    }
+]
