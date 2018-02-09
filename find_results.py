@@ -2,7 +2,24 @@ import sublime
 import sublime_plugin
 import re, os, shutil
 
-class FindInFilesOpenFileCommand(sublime_plugin.TextCommand):
+
+def is_find_results(view):
+    syntax = view.settings().get('syntax', '')
+    if syntax:
+        return syntax.endswith("Find Results.hidden-tmLanguage")
+
+
+class BetterFindBufferBaseTextCommand(sublime_plugin.TextCommand):
+
+    def __init__(self, view):
+        super().__init__( view )
+        self.is_find_results = is_find_results( view )
+
+    def is_visible(self, event=None):
+        return self.is_find_results
+
+
+class FindInFilesOpenFileCommand(BetterFindBufferBaseTextCommand):
     def run(self, edit):
         view = self.view
         for sel in view.sel():
@@ -35,7 +52,7 @@ class FindInFilesOpenFileCommand(sublime_plugin.TextCommand):
         return None
 
 
-class FindInFilesOpenAllFilesCommand(sublime_plugin.TextCommand):
+class FindInFilesOpenAllFilesCommand(BetterFindBufferBaseTextCommand):
     def run(self, edit):
         view = self.view
         if view.name() == "Find Results":
@@ -48,14 +65,14 @@ class FindInFilesOpenAllFilesCommand(sublime_plugin.TextCommand):
         return [match.group(1) for match in re.finditer(r"^([^\s].+):$", content, re.MULTILINE)]
 
 
-class FindInFilesJumpFileCommand(sublime_plugin.TextCommand):
+class FindInFilesJumpFileCommand(BetterFindBufferBaseTextCommand):
     def run(self, edit, forward=True):
         v = self.view
         files = v.find_by_selector("entity.name.filename.find-in-files")
         caret = v.sel()[0]
 
 
-class FindInFilesJumpCommand(sublime_plugin.TextCommand):
+class FindInFilesJumpCommand(BetterFindBufferBaseTextCommand):
     def run(self, edit, forward=True, cycle=True):
         caret = self.view.sel()[0]
         matches = self.filter_matches(caret, self.find_matches())
@@ -114,7 +131,7 @@ class FindInFilesJumpMatchCommand(FindInFilesJumpCommand):
             v.show_at_center(match)
 
 
-class BfbClearFilePathCommand(sublime_plugin.TextCommand):
+class BfbClearFilePathCommand(BetterFindBufferBaseTextCommand):
     def run(self, edit):
         folders = sublime.active_window().folders()
         for folder in folders:
@@ -124,7 +141,7 @@ class BfbClearFilePathCommand(sublime_plugin.TextCommand):
                 self.view.fold(sublime.Region(r.a, r.b+1))
 
 
-class BfbTogglePopupHelpCommand(sublime_plugin.TextCommand):
+class BfbTogglePopupHelpCommand(BetterFindBufferBaseTextCommand):
     def run(self, edit):
         popup_max_width = 800
         popup_max_height = 800
@@ -132,7 +149,7 @@ class BfbTogglePopupHelpCommand(sublime_plugin.TextCommand):
         self.view.show_popup(html, 0, -1, popup_max_width, popup_max_height)
 
 
-class BfbFoldAndMoveToNextFileCommand(sublime_plugin.TextCommand):
+class BfbFoldAndMoveToNextFileCommand(BetterFindBufferBaseTextCommand):
     def run(self, edit):
         begin = self.get_begin()
         end = self.get_end()
@@ -168,20 +185,15 @@ class BfbFoldAndMoveToNextFileCommand(sublime_plugin.TextCommand):
 
 
 class FindInFilesSetReadOnly(sublime_plugin.EventListener):
-    def is_find_results(self, view):
-        syntax = view.settings().get('syntax', '')
-        if syntax:
-            return syntax.endswith("Find Results.hidden-tmLanguage")
-
     def on_activated_async(self, view):
-        if self.is_find_results(view):
+        if is_find_results(view):
             settings = sublime.load_settings('BetterFindBuffer.sublime-settings')
             if settings.get('fold_path_prefix', True):
                 view.run_command('bfb_clear_file_path')
             view.set_read_only(settings.get('readonly', True))
 
     def on_deactivated_async(self, view):
-        if self.is_find_results(view):
+        if is_find_results(view):
             view.set_read_only(False)
 
 
