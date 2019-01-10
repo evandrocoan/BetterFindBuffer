@@ -153,8 +153,10 @@ class BfbFoldAndMoveToNextFileCommand(BetterFindBufferBaseTextCommand):
     def run(self, edit):
         begin = self.get_begin()
         end = self.get_end()
-        self.view.fold(sublime.Region(begin.b + 1, end.a - 1))
-        sublime.set_timeout_async(self.move_to_next, 0)
+
+        if begin and end:
+            self.view.fold(sublime.Region(begin.b + 1, end.a - 1))
+            sublime.set_timeout_async(self.move_to_next, 0)
 
     def move_to_next(self):
         self.view.run_command('find_in_files_jump_file')
