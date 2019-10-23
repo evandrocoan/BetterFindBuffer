@@ -63,5 +63,12 @@
         "context": [
             {"key": "selector", "operator": "equal", "operand": "text.find-in-files" },
         ]
+    },
+    {
+        "keys": ["f5"],
+        "command": "bfb_toggle_read_only_state",
+        "context": [
+            {"key": "selector", "operator": "equal", "operand": "text.find-in-files" },
+        ]
     }
 ]

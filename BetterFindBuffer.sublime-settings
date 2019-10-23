@@ -1,4 +1,4 @@
 {
-    "readonly": true,
-    "fold_path_prefix": false
+    "better_find_buffer.read_only": true,
+    "better_find_buffer.fold_path_prefix": false
 }

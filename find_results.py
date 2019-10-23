@@ -2,11 +2,34 @@ import sublime
 import sublime_plugin
 import re, os, shutil
 
+g_statusbarkey = "BetterFindBuffer"
+
+try:
+    from FixedToggleFindPanel.fixed_toggle_find_panel import is_panel_focused
+
+except ImportError as error:
+    print( '%s Error: Could not import the FixedToggleFindPanel package!' % ( g_statusbarkey, error ) )
+
+    def is_panel_focused():
+        return False
+
+
 
 def is_find_results(view):
     syntax = view.settings().get('syntax', '')
     if syntax:
         return syntax.endswith("Find Results.hidden-tmLanguage")
+
+
+def show_status_bar(view, message, formats):
+    message = message % formats
+
+    if is_panel_focused():
+        window = view.window() or sublime.active_window()
+        view = window.active_view()
+
+    print( "%s: %s" % ( g_statusbarkey, message ) )
+    view.set_status( g_statusbarkey, message )
 
 
 class BetterFindBufferBaseTextCommand(sublime_plugin.TextCommand):
@@ -189,14 +212,28 @@ class BfbFoldAndMoveToNextFileCommand(BetterFindBufferBaseTextCommand):
 class FindInFilesSetReadOnly(sublime_plugin.EventListener):
     def on_activated_async(self, view):
         if is_find_results(view):
-            settings = sublime.load_settings('BetterFindBuffer.sublime-settings')
-            if settings.get('fold_path_prefix', True):
+            settings = view.settings()
+
+            if settings.get('better_find_buffer.fold_path_prefix', True):
                 view.run_command('bfb_clear_file_path')
-            view.set_read_only(settings.get('readonly', True))
+
+            view.set_read_only(settings.get('better_find_buffer.read_only', True))
 
     def on_deactivated_async(self, view):
         if is_find_results(view):
             view.set_read_only(False)
+
+
+class BfbToggleReadOnlyState(sublime_plugin.TextCommand):
+
+    def run(self, edit):
+        view = self.view
+        settings = view.settings()
+        read_only = not settings.get( 'better_find_buffer.read_only', True )
+
+        show_status_bar( view, "Setting better_find_buffer.read_only to '%s'", read_only )
+        settings.set( 'better_find_buffer.read_only', read_only )
+        view.set_read_only( read_only )
 
 
 # Some plugins like **Color Highlighter** are forcing their color-scheme to the activated view
